@@ -742,6 +742,7 @@ concept byte_view = byte_type<typename std::remove_cvref_t<Type>::value_type> &&
 {
     value.data();
     value.size();
+    value[1];
 };
 
 template <typename Type>
@@ -1854,14 +1855,13 @@ public:
 
     constexpr static bool resizable = requires(ByteView view)
     {
+        view.reserve(1);
         view.resize(1);
     };
 
     using view_type =
         std::conditional_t<resizable,
-                           ByteView &,
-                           std::remove_cvref_t<decltype(
-                               std::span{std::declval<ByteView &>()})>>;
+                           ByteView &, std::span<byte_type>>;
 
     constexpr explicit basic_out(ByteView && view, Options && ... options) : m_data(view)
     {
@@ -2529,9 +2529,7 @@ public:
 
     using view_type =
         std::conditional_t<resizable,
-                           ByteView &,
-                           std::remove_cvref_t<decltype(
-                               std::span{std::declval<ByteView &>()})>>;
+                           ByteView &, std::span<byte_type>>;
 
 private:
     ZPP_BITS_INLINE constexpr errc serialize_many(auto && first_item,
